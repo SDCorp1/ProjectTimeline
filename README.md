@@ -44,9 +44,63 @@ This project provides an interactive visualization tool that allows users to exp
 
 ## Installation
 
+
+
 1. **Clone the Repository:**
 
    ```bash
    git clone https://github.com/yourusername/interactive-timeline-map.git
    cd interactive-timeline-map
-# ProjectTimeline
+
+Install the Required Packages:
+
+Make sure you have Python installed. Then, install the dependencies using pip:
+
+bash
+Copy
+pip install dash plotly pandas
+Usage
+Run the Application:
+
+Execute the app using Python:
+
+bash
+Copy
+python app.py
+Open in Browser:
+
+Once the server is running, open your web browser and navigate to http://127.0.0.1:8050 to interact with the application.
+
+Interacting with the App:
+
+Use the dropdown menus to filter by Category and Era.
+Use the search box to filter by Name.
+Toggle between Timeline and Map views.
+Choose your preferred Theme and Color Scheme.
+Click the Download Current View button to export the current visualization as an HTML file.
+Dataset
+The dataset is embedded directly within the code and includes:
+
+Islamic Figures: Prophet Muhammad, the four Rashidun Caliphs, the 12 Imams, Umayyad and Abbasid rulers, classical jurists and scholars, and key Sufi and Shia scholars.
+Non‑Muslim Figures: Major non‑Muslim rulers (e.g., Heraclius, Charlemagne, Napoleon Bonaparte), Renaissance figures (e.g., Leonardo da Vinci, Michelangelo, Martin Luther, Christopher Columbus, Queen Elizabeth I), scientists (e.g., Isaac Newton, Albert Einstein, Stephen Hawking), and modern figures (e.g., Barack Obama, Bill Gates, Marie Curie).
+The dataset uses approximate coordinates for mapping purposes. You can extend or refine the dataset by editing the data list in the code.
+
+Download Feature
+The application includes a download button that exports the current view (timeline or map) as an HTML file. This is achieved using Dash’s dcc.Download component combined with Plotly's to_html method.
+
+Contributing
+Contributions are welcome! If you have additional data or improvements to suggest:
+
+Fork the repository.
+Create a new branch for your feature or bug fix.
+Commit your changes.
+Open a pull request with a description of your changes.
+Please follow the repository’s coding style and add tests if applicable.
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+Contact
+If you have any questions or suggestions, please feel free to reach out via GitHub Issues or contact danialahmed.92@gmail.com
+
+
