@@ -1,0 +1,557 @@
+pip install dash plotly pandas
+import dash
+from dash import dcc, html, Input, Output, State
+import plotly.graph_objects as go
+import pandas as pd
+
+# Updated color schemes with new categories
+color_schemes = {
+    "Default": {
+        "Prophet": "#FFD700",           # Gold
+        "Imam": "#90EE90",              # Light Green
+        "Sufi Saint": "#9370DB",        # Medium Purple
+        "Scholar": "#ADD8E6",           # Light Blue
+        "Philosopher": "#FFB6C1",       # Light Pink
+        "Sufi Mystic": "#DDA0DD",       # Plum
+        "Physician": "#98FB98",         # Pale Green
+        "Poet/Scholar": "#87CEFA",      # Light Sky Blue
+        "Explorer": "#FFA07A",          # Light Salmon
+        "Modern Thinker": "#D3D3D3",    # Light Gray
+        "Scientist": "#FF7F50",         # Coral
+        "Ruler": "#8B0000",             # Dark Red
+        "Shia Scholar": "#FF8C00",      # Dark Orange
+        "Non-Islamic Scholar": "#4682B4",  # Steel Blue
+        "Non-Islamic Figure": "#8B008B",   # Dark Magenta
+        "Non-Islamic Ruler": "#2E8B57"     # Sea Green
+    },
+    "Pastel": {
+        "Prophet": "#FFFACD",
+        "Imam": "#E0FFE0",
+        "Sufi Saint": "#E6E6FA",
+        "Scholar": "#B0E0E6",
+        "Philosopher": "#FFC0CB",
+        "Sufi Mystic": "#D8BFD8",
+        "Physician": "#98FB98",
+        "Poet/Scholar": "#87CEEB",
+        "Explorer": "#FFDAB9",
+        "Modern Thinker": "#D3D3D3",
+        "Scientist": "#FFB6C1",
+        "Ruler": "#CD5C5C",
+        "Shia Scholar": "#FFE4B5",
+        "Non-Islamic Scholar": "#B0C4DE",
+        "Non-Islamic Figure": "#C0C0C0",
+        "Non-Islamic Ruler": "#F0E68C"
+    },
+    "Vibrant": {
+        "Prophet": "#FFA500",
+        "Imam": "#32CD32",
+        "Sufi Saint": "#8A2BE2",
+        "Scholar": "#00BFFF",
+        "Philosopher": "#FF69B4",
+        "Sufi Mystic": "#DA70D6",
+        "Physician": "#7CFC00",
+        "Poet/Scholar": "#1E90FF",
+        "Explorer": "#FF4500",
+        "Modern Thinker": "#A9A9A9",
+        "Scientist": "#FF6347",
+        "Ruler": "#B22222",
+        "Shia Scholar": "#FF1493",
+        "Non-Islamic Scholar": "#00CED1",
+        "Non-Islamic Figure": "#00FF7F",
+        "Non-Islamic Ruler": "#DC143C"
+    }
+}
+
+# Expanded dataset with many important figures.
+# Coordinates are approximate.
+data = [
+    # Islamic Figures (Prophet, Caliphs, Imams)
+    {"Name": "Prophet Muhammad", "Birth": 570, "Death": 632,
+     "Era": "Early Islamic Period", "Notes": "Founder of Islam.", "Category": "Prophet",
+     "Latitude": 21.3891, "Longitude": 39.8579},
+    {"Name": "Abu Bakr", "Birth": 573, "Death": 634,
+     "Era": "Rashidun Caliphate", "Notes": "First Caliph.", "Category": "Ruler",
+     "Latitude": 21.3891, "Longitude": 39.8579},
+    {"Name": "Umar ibn al-Khattab", "Birth": 584, "Death": 644,
+     "Era": "Rashidun Caliphate", "Notes": "Second Caliph; expanded the Islamic state.", "Category": "Ruler",
+     "Latitude": 21.3891, "Longitude": 39.8579},
+    {"Name": "Uthman ibn Affan", "Birth": 576, "Death": 656,
+     "Era": "Rashidun Caliphate", "Notes": "Third Caliph; compiled the Quran.", "Category": "Ruler",
+     "Latitude": 21.3891, "Longitude": 39.8579},
+    {"Name": "Imam Ali ibn Abi Talib", "Birth": 600, "Death": 661,
+     "Era": "Ahl al-Bayt", "Notes": "First Imam; cousin/son-in-law of Prophet Muhammad.", "Category": "Imam",
+     "Latitude": 21.3891, "Longitude": 39.8579},
+    {"Name": "Imam Hasan ibn Ali", "Birth": 625, "Death": 670,
+     "Era": "Ahl al-Bayt", "Notes": "Second Imam; known for his treaty with Muawiya.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Husayn ibn Ali", "Birth": 626, "Death": 680,
+     "Era": "Ahl al-Bayt", "Notes": "Third Imam; martyred at Karbala.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Ali Zayn al-Abidin", "Birth": 658, "Death": 712,
+     "Era": "Ahl al-Bayt", "Notes": "Fourth Imam; renowned for his supplications.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Muhammad al-Baqir", "Birth": 676, "Death": 743,
+     "Era": "Ahl al-Bayt", "Notes": "Fifth Imam; contributed to Islamic jurisprudence.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Ja'far al-Sadiq", "Birth": 702, "Death": 765,
+     "Era": "Ahl al-Bayt", "Notes": "Sixth Imam; founder of the Ja'fari school.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Musa al-Kadhim", "Birth": 745, "Death": 799,
+     "Era": "Ahl al-Bayt", "Notes": "Seventh Imam.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Ali al-Ridha", "Birth": 765, "Death": 818,
+     "Era": "Ahl al-Bayt", "Notes": "Eighth Imam.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Muhammad al-Taqi", "Birth": 811, "Death": 835,
+     "Era": "Ahl al-Bayt", "Notes": "Ninth Imam; also known as al-Jawad.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Ali al-Hadi", "Birth": 827, "Death": 868,
+     "Era": "Ahl al-Bayt", "Notes": "Tenth Imam.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Hasan al-Askari", "Birth": 846, "Death": 874,
+     "Era": "Ahl al-Bayt", "Notes": "Eleventh Imam.", "Category": "Imam",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam Muhammad al-Mahdi", "Birth": 869, "Death": 941,
+     "Era": "Ahl al-Bayt", "Notes": "Twelfth Imam; believed to be in occultation.", "Category": "Imam",
+     "Latitude": None, "Longitude": None},
+     
+    # Umayyad Rulers
+    {"Name": "Muawiya I", "Birth": 602, "Death": 680,
+     "Era": "Umayyad Caliphate", "Notes": "Founder of the Umayyad Caliphate.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Yazid I", "Birth": 645, "Death": 683,
+     "Era": "Umayyad Caliphate", "Notes": "Second Umayyad Caliph.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Muawiya II", "Birth": 661, "Death": 684,
+     "Era": "Umayyad Caliphate", "Notes": "Short-reigned Caliph.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Marwan I", "Birth": 623, "Death": 685,
+     "Era": "Umayyad Caliphate", "Notes": "Consolidated Umayyad power.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Abd al-Malik", "Birth": 646, "Death": 705,
+     "Era": "Umayyad Caliphate", "Notes": "Introduced Arabic coinage.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Al-Walid I", "Birth": 668, "Death": 715,
+     "Era": "Umayyad Caliphate", "Notes": "Expanded the empire.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Sulayman", "Birth": 674, "Death": 717,
+     "Era": "Umayyad Caliphate", "Notes": "Known for his piety.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Umar II", "Birth": 682, "Death": 720,
+     "Era": "Umayyad Caliphate", "Notes": "Reformer.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Yazid II", "Birth": 687, "Death": 724,
+     "Era": "Umayyad Caliphate", "Notes": "Troubled reign.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Hisham", "Birth": 691, "Death": 743,
+     "Era": "Umayyad Caliphate", "Notes": "Long-reigning Caliph.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Al-Walid II", "Birth": 706, "Death": 744,
+     "Era": "Umayyad Caliphate", "Notes": "Controversial reign.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Yazid III", "Birth": 710, "Death": 744,
+     "Era": "Umayyad Caliphate", "Notes": "Brief reign.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Ibrahim", "Birth": 727, "Death": 749,
+     "Era": "Umayyad Caliphate", "Notes": "One of the last Caliphs.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+    {"Name": "Marwan II", "Birth": 688, "Death": 750,
+     "Era": "Umayyad Caliphate", "Notes": "Last Umayyad Caliph.", "Category": "Ruler",
+     "Latitude": 33.5138, "Longitude": 36.2765},
+
+    # Abbasid Rulers
+    {"Name": "As-Saffah", "Birth": 721, "Death": 754,
+     "Era": "Abbasid Caliphate", "Notes": "First Abbasid Caliph.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mansur", "Birth": 714, "Death": 775,
+     "Era": "Abbasid Caliphate", "Notes": "Founder of Baghdad.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mahdi", "Birth": 744, "Death": 785,
+     "Era": "Abbasid Caliphate", "Notes": "Third Abbasid Caliph.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Hadi", "Birth": 764, "Death": 786,
+     "Era": "Abbasid Caliphate", "Notes": "Fourth Abbasid Caliph.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Harun al-Rashid", "Birth": 763, "Death": 809,
+     "Era": "Abbasid Caliphate", "Notes": "Zenith of Abbasid power.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Amin", "Birth": 787, "Death": 813,
+     "Era": "Abbasid Caliphate", "Notes": "Civil war ended his reign.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Ma'mun", "Birth": 786, "Death": 833,
+     "Era": "Abbasid Caliphate", "Notes": "Promoted science and philosophy.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mu'tasim", "Birth": 796, "Death": 842,
+     "Era": "Abbasid Caliphate", "Notes": "Known for military campaigns.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Wathiq", "Birth": 812, "Death": 847,
+     "Era": "Abbasid Caliphate", "Notes": "Patron of the arts.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mutawakkil", "Birth": 822, "Death": 861,
+     "Era": "Abbasid Caliphate", "Notes": "Cultural and economic policies.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mu'tamid", "Birth": 842, "Death": 892,
+     "Era": "Abbasid Caliphate", "Notes": "Later figurehead Caliph.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Mu'tadid", "Birth": 853, "Death": 902,
+     "Era": "Abbasid Caliphate", "Notes": "Known for administrative reforms.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+    {"Name": "Al-Muqtadir", "Birth": 895, "Death": 932,
+     "Era": "Abbasid Caliphate", "Notes": "Later Abbasid challenges.", "Category": "Ruler",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+     
+    # Islamic Jurisprudence & Additional Scholars
+    {"Name": "Imam Abu Hanifa", "Birth": 699, "Death": 767,
+     "Era": "Formation of Islamic Jurisprudence", "Notes": "Founder of the Hanafi school.", "Category": "Scholar",
+     "Latitude": 32.0, "Longitude": 44.0},
+    {"Name": "Imam Malik ibn Anas", "Birth": 711, "Death": 795,
+     "Era": "Formation of Islamic Jurisprudence", "Notes": "Founder of the Maliki school.", "Category": "Scholar",
+     "Latitude": 24.5247, "Longitude": 39.5692},
+    {"Name": "Imam al-Shafi'i", "Birth": 767, "Death": 820,
+     "Era": "Formation of Islamic Jurisprudence", "Notes": "Founder of the Shafi'i school.", "Category": "Scholar",
+     "Latitude": 31.5, "Longitude": 34.4667},
+    {"Name": "Imam Ahmad ibn Hanbal", "Birth": 780, "Death": 855,
+     "Era": "Formation of Islamic Jurisprudence", "Notes": "Founder of the Hanbali school.", "Category": "Scholar",
+     "Latitude": 33.3128, "Longitude": 44.3615},
+     
+    # Golden Age of Islamic Scholarship & Science
+    {"Name": "Al-Khwarizmi", "Birth": 780, "Death": 850,
+     "Era": "Golden Age", "Notes": "Mathematician; founder of algebra.", "Category": "Scientist",
+     "Latitude": 40.0, "Longitude": 66.0},
+    {"Name": "Al-Tabari", "Birth": 838, "Death": 923,
+     "Era": "Golden Age", "Notes": "Historian and Quranic exegete.", "Category": "Scholar",
+     "Latitude": 36.4667, "Longitude": 52.3500},
+    {"Name": "Al-Razi", "Birth": 854, "Death": 925,
+     "Era": "Golden Age", "Notes": "Physician and polymath.", "Category": "Physician",
+     "Latitude": 35.5, "Longitude": 51.4},
+    {"Name": "Al-Farabi", "Birth": 872, "Death": 950,
+     "Era": "Golden Age", "Notes": "Philosopher known as the 'Second Teacher'.", "Category": "Philosopher",
+     "Latitude": 44.0, "Longitude": 65.0},
+    {"Name": "Ibn al-Haytham (Alhazen)", "Birth": 965, "Death": 1040,
+     "Era": "Golden Age", "Notes": "Pioneer of optics.", "Category": "Scientist",
+     "Latitude": 30.0444, "Longitude": 31.2357},
+     
+    # Additional Islamic Scholars/Sufi Saints & Shia Scholars
+    {"Name": "Ibn Sina (Avicenna)", "Birth": 980, "Death": 1037,
+     "Era": "Golden Age", "Notes": "Influential philosopher and physician.", "Category": "Scientist",
+     "Latitude": 39.77, "Longitude": 64.42},
+    {"Name": "Al-Ghazali", "Birth": 1058, "Death": 1111,
+     "Era": "Medieval Scholarship", "Notes": "Theologian and mystic.", "Category": "Scholar",
+     "Latitude": 36.20, "Longitude": 57.68},
+    {"Name": "Ibn Zuhr (Avenzoar)", "Birth": 1091, "Death": 1162,
+     "Era": "Medieval Scholarship", "Notes": "Andalusian physician.", "Category": "Physician",
+     "Latitude": 37.8882, "Longitude": -4.7794},
+    {"Name": "Ibn Tufayl", "Birth": 1105, "Death": 1185,
+     "Era": "Medieval Scholarship", "Notes": "Philosopher and writer.", "Category": "Philosopher",
+     "Latitude": 37.2769, "Longitude": -3.6066},
+     
+    # Sufi Saints & Shia Scholars
+    {"Name": "Data Ganj Baksh (Ali Hujwiri)", "Birth": 1009, "Death": 1077,
+     "Era": "Sufi Tradition", "Notes": "Sufi saint of Lahore.", "Category": "Sufi Saint",
+     "Latitude": 31.5204, "Longitude": 74.3587},
+    {"Name": "Moinuddin Chishti", "Birth": 1143, "Death": 1236,
+     "Era": "Sufi Tradition", "Notes": "Founder of the Chishti Order in India.", "Category": "Sufi Saint",
+     "Latitude": 26.4499, "Longitude": 74.6399},
+    {"Name": "Abdul Qadir Gilani", "Birth": 1077, "Death": 1166,
+     "Era": "Medieval", "Notes": "Founder of the Qadiriyya Sufi order.", "Category": "Sufi Saint",
+     "Latitude": 36.2600, "Longitude": 59.5600},
+    {"Name": "Bahauddin Naqshband", "Birth": 1318, "Death": 1389,
+     "Era": "Medieval", "Notes": "Founder of the Naqshbandi order.", "Category": "Sufi Saint",
+     "Latitude": 39.0000, "Longitude": 67.0000},
+    {"Name": "Jalaluddin Rumi", "Birth": 1207, "Death": 1273,
+     "Era": "Sufi Mysticism", "Notes": "Famed Sufi poet.", "Category": "Sufi Mystic",
+     "Latitude": 37.8746, "Longitude": 32.4932},
+    {"Name": "Mulla Sadra", "Birth": 1571, "Death": 1636,
+     "Era": "Early Modern Era", "Notes": "Major Shia philosopher.", "Category": "Shia Scholar",
+     "Latitude": 29.5918, "Longitude": 52.5837},
+    {"Name": "Allama Majlisi", "Birth": 1616, "Death": 1698,
+     "Era": "Early Modern Era", "Notes": "Renowned Shia scholar and theologian.", "Category": "Shia Scholar",
+     "Latitude": 32.6546, "Longitude": 51.6680},
+    {"Name": "Ayatollah Khomeini", "Birth": 1902, "Death": 1989,
+     "Era": "Modern Era", "Notes": "Revolutionary leader and Shia scholar.", "Category": "Shia Scholar",
+     "Latitude": 33.4232, "Longitude": 50.1054},
+    {"Name": "Ayatollah al-Sistani", "Birth": 1930, "Death": 2025,
+     "Era": "Modern Era", "Notes": "Leading Shia cleric.", "Category": "Shia Scholar",
+     "Latitude": 32.0019, "Longitude": 44.3299},
+     
+    # Non‑Muslim Contemporaries & Historical Figures
+    {"Name": "Heraclius", "Birth": 575, "Death": 641,
+     "Era": "Late Antiquity", "Notes": "Byzantine Emperor during Prophet Muhammad's time.", "Category": "Non-Islamic Ruler",
+     "Latitude": 41.0082, "Longitude": 28.9784},
+    {"Name": "Charlemagne", "Birth": 742, "Death": 814,
+     "Era": "Early Medieval", "Notes": "King of the Franks and Holy Roman Emperor.", "Category": "Non-Islamic Ruler",
+     "Latitude": 50.7753, "Longitude": 6.0839},
+    {"Name": "William the Conqueror", "Birth": 1028, "Death": 1087,
+     "Era": "Medieval", "Notes": "Norman Conqueror of England.", "Category": "Non-Islamic Ruler",
+     "Latitude": 49.1829, "Longitude": -0.3700},
+    {"Name": "Genghis Khan", "Birth": 1162, "Death": 1227,
+     "Era": "Medieval", "Notes": "Founder of the Mongol Empire.", "Category": "Non-Islamic Ruler",
+     "Latitude": 47.9167, "Longitude": 106.9167},
+    {"Name": "Leonardo da Vinci", "Birth": 1452, "Death": 1519,
+     "Era": "Renaissance", "Notes": "Renaissance polymath.", "Category": "Non-Islamic Scholar",
+     "Latitude": 43.7833, "Longitude": 10.9167},
+    {"Name": "Michelangelo", "Birth": 1475, "Death": 1564,
+     "Era": "Renaissance", "Notes": "Artist, sculptor, and architect.", "Category": "Non-Islamic Scholar",
+     "Latitude": 43.6167, "Longitude": 11.2167},
+    {"Name": "Martin Luther", "Birth": 1483, "Death": 1546,
+     "Era": "Renaissance", "Notes": "Reformation leader.", "Category": "Non-Islamic Scholar",
+     "Latitude": 51.8667, "Longitude": 12.7167},
+    {"Name": "Christopher Columbus", "Birth": 1451, "Death": 1506,
+     "Era": "Renaissance", "Notes": "Explorer who reached the Americas.", "Category": "Non-Islamic Figure",
+     "Latitude": 44.4056, "Longitude": 8.9463},
+    {"Name": "Queen Elizabeth I", "Birth": 1533, "Death": 1603,
+     "Era": "Renaissance", "Notes": "Queen of England.", "Category": "Non-Islamic Ruler",
+     "Latitude": 51.5074, "Longitude": -0.1278},
+    {"Name": "Galileo Galilei", "Birth": 1564, "Death": 1642,
+     "Era": "Scientific Revolution", "Notes": "Astronomer and physicist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 43.7228, "Longitude": 10.4017},
+    {"Name": "Nicolaus Copernicus", "Birth": 1473, "Death": 1543,
+     "Era": "Scientific Revolution", "Notes": "Mathematician and astronomer.", "Category": "Non-Islamic Scholar",
+     "Latitude": 53.0138, "Longitude": 18.5981},
+    {"Name": "Johannes Gutenberg", "Birth": 1400, "Death": 1468,
+     "Era": "Late Medieval", "Notes": "Inventor of the printing press.", "Category": "Non-Islamic Scholar",
+     "Latitude": 49.9929, "Longitude": 8.2473},
+    {"Name": "Queen Victoria", "Birth": 1819, "Death": 1901,
+     "Era": "Modern Era", "Notes": "Queen of the United Kingdom.", "Category": "Non-Islamic Ruler",
+     "Latitude": 51.5074, "Longitude": -0.1278},
+    {"Name": "Winston Churchill", "Birth": 1874, "Death": 1965,
+     "Era": "Modern Era", "Notes": "British Prime Minister during WWII.", "Category": "Non-Islamic Figure",
+     "Latitude": 51.5074, "Longitude": -0.1278},
+    {"Name": "Mahatma Gandhi", "Birth": 1869, "Death": 1948,
+     "Era": "Modern Era", "Notes": "Indian independence leader.", "Category": "Non-Islamic Figure",
+     "Latitude": 21.1702, "Longitude": 72.8311},
+    {"Name": "Napoleon Bonaparte", "Birth": 1769, "Death": 1821,
+     "Era": "Modern Era", "Notes": "French military and political leader.", "Category": "Non-Islamic Ruler",
+     "Latitude": 41.9190, "Longitude": 8.7386},
+    {"Name": "Isaac Newton", "Birth": 1643, "Death": 1727,
+     "Era": "Scientific Revolution", "Notes": "Mathematician and physicist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 52.8333, "Longitude": -0.2667},
+    {"Name": "Albert Einstein", "Birth": 1879, "Death": 1955,
+     "Era": "Modern Era", "Notes": "Theoretical physicist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 48.4011, "Longitude": 10.0022},
+    {"Name": "Stephen Hawking", "Birth": 1942, "Death": 2018,
+     "Era": "Modern Era", "Notes": "Theoretical physicist and cosmologist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 51.7520, "Longitude": -1.2577},
+    {"Name": "Noam Chomsky", "Birth": 1928, "Death": 2025,
+     "Era": "Modern Era", "Notes": "Linguist, philosopher, and political activist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 39.9526, "Longitude": -75.1652},
+    {"Name": "Barack Obama", "Birth": 1961, "Death": 2025,
+     "Era": "Modern Era", "Notes": "44th President of the United States.", "Category": "Non-Islamic Figure",
+     "Latitude": 21.3069, "Longitude": -157.8583},
+    {"Name": "Bill Gates", "Birth": 1955, "Death": 2025,
+     "Era": "Modern Era", "Notes": "Business magnate and philanthropist.", "Category": "Non-Islamic Figure",
+     "Latitude": 47.6062, "Longitude": -122.3321},
+    {"Name": "Marie Curie", "Birth": 1867, "Death": 1934,
+     "Era": "Modern Era", "Notes": "Pioneering physicist and chemist.", "Category": "Non-Islamic Scholar",
+     "Latitude": 48.8566, "Longitude": 2.3522}
+]
+
+# Convert dataset to DataFrame and sort by Birth year
+df = pd.DataFrame(sorted(data, key=lambda x: x["Birth"]))
+unique_categories = sorted(df["Category"].dropna().unique())
+unique_eras = sorted(df["Era"].dropna().unique())
+
+def get_layout_theme(theme):
+    if theme == "Dark":
+        return {"plot_bgcolor": "#303030", "paper_bgcolor": "#303030", "font": {"color": "#FFFFFF"}}
+    else:
+        return {"plot_bgcolor": "#FFFFFF", "paper_bgcolor": "#FFFFFF", "font": {"color": "#000000"}}
+
+# Timeline view: displays each figure as a rectangle spanning from Birth to Death
+def create_timeline(filtered_df, theme, scheme):
+    cs = color_schemes.get(scheme, color_schemes["Default"])
+    filtered_df = filtered_df.sort_values("Birth").reset_index(drop=True)
+    fig = go.Figure()
+    for i, row in filtered_df.iterrows():
+        birth = row["Birth"]
+        death = row["Death"] if row["Death"] is not None else 2025
+        name = row["Name"]
+        era = row["Era"]
+        notes = row["Notes"]
+        category = row["Category"]
+        fill_color = cs.get(category, "LightSkyBlue")
+        fig.add_shape(
+            type="rect",
+            x0=birth,
+            y0=i - 0.4,
+            x1=death,
+            y1=i + 0.4,
+            line=dict(color="RoyalBlue"),
+            fillcolor=fill_color,
+        )
+        fig.add_trace(go.Scatter(
+            x=[(birth + death) / 2],
+            y=[i],
+            mode="markers",
+            marker=dict(color="rgba(0,0,0,0)"),
+            hovertemplate=(
+                f"<b>{name}</b><br>"
+                f"Category: {category}<br>"
+                f"Era: {era}<br>"
+                f"Birth: {birth}<br>"
+                f"Death: {row['Death'] if row['Death'] is not None else 'Present'}<br>"
+                f"Notes: {notes}<extra></extra>"
+            )
+        ))
+    fig.update_yaxes(
+        tickmode="array",
+        tickvals=list(range(len(filtered_df))),
+        ticktext=filtered_df["Name"].tolist(),
+        autorange="reversed"
+    )
+    layout_theme = get_layout_theme(theme)
+    fig.update_layout(
+        title="Interactive Timeline of Islamic and Contemporary Personalities",
+        xaxis_title="Year",
+        yaxis_title="Name",
+        showlegend=False,
+        height=1400,
+        margin=dict(l=200, r=50, t=50, b=50),
+        **layout_theme
+    )
+    return fig
+
+# Duotone map view using "carto-positron"
+def create_map_duotone(filtered_df, theme, scheme):
+    cs = color_schemes.get(scheme, color_schemes["Default"])
+    map_df = filtered_df.dropna(subset=["Latitude", "Longitude"]).copy().reset_index(drop=True)
+    if map_df.empty:
+        return go.Figure()
+    map_df["MarkerColor"] = map_df["Category"].apply(lambda cat: cs.get(cat, "LightSkyBlue"))
+    map_df["hover_text"] = map_df.apply(lambda row:
+        f"<b>{row['Name']}</b><br>Category: {row['Category']}<br>Era: {row['Era']}<br>"
+        f"Birth: {row['Birth']}<br>Death: {row['Death'] if row['Death'] is not None else 'Present'}<br>"
+        f"Notes: {row['Notes']}", axis=1)
+    center_lat = map_df["Latitude"].mean()
+    center_lon = map_df["Longitude"].mean()
+    fig = go.Figure(go.Scattermapbox(
+        lat=map_df["Latitude"],
+        lon=map_df["Longitude"],
+        mode="markers",
+        marker=dict(
+            size=12,
+            color=map_df["MarkerColor"]
+        ),
+        text=map_df["hover_text"],
+        hoverinfo="text"
+    ))
+    fig.update_layout(
+        mapbox_style="carto-positron",
+        mapbox_center={"lat": center_lat, "lon": center_lon},
+        mapbox_zoom=2,
+        height=800,
+        margin=dict(l=50, r=50, t=50, b=50)
+    )
+    layout_theme = get_layout_theme(theme)
+    fig.update_layout(
+        title="Map of Birth Locations (Duotone)",
+        **layout_theme
+    )
+    return fig
+
+# Download function to export current figure as HTML
+def generate_html_download(figure):
+    return go.Figure(figure).to_html(full_html=True)
+
+# Initialize Dash app
+app = dash.Dash(__name__)
+
+app.layout = html.Div([
+    html.H1("Interactive Timeline & Map of Personalities"),
+    html.Div([
+        html.Label("Filter by Category:"),
+        dcc.Dropdown(
+            id="category-filter",
+            options=[{"label": cat, "value": cat} for cat in unique_categories],
+            multi=True,
+            placeholder="Select categories..."
+        )
+    ], style={"width": "30%", "display": "inline-block", "verticalAlign": "top", "marginRight": "20px"}),
+    html.Div([
+        html.Label("Filter by Era:"),
+        dcc.Dropdown(
+            id="era-filter",
+            options=[{"label": era, "value": era} for era in unique_eras],
+            multi=True,
+            placeholder="Select eras..."
+        )
+    ], style={"width": "30%", "display": "inline-block", "verticalAlign": "top", "marginRight": "20px"}),
+    html.Div([
+        html.Label("Search by Name:"),
+        dcc.Input(id="search-input", type="text", placeholder="Enter name...", debounce=True)
+    ], style={"width": "30%", "display": "inline-block", "verticalAlign": "top"}),
+    html.Br(), html.Br(),
+    html.Div([
+        html.Label("Theme:"),
+        dcc.RadioItems(
+            id="theme-toggle",
+            options=[{"label": "Light", "value": "Light"}, {"label": "Dark", "value": "Dark"}],
+            value="Light",
+            labelStyle={"display": "inline-block", "margin-right": "20px"}
+        )
+    ]),
+    html.Br(),
+    html.Div([
+        html.Label("Color Scheme:"),
+        dcc.Dropdown(
+            id="color-scheme",
+            options=[{"label": k, "value": k} for k in color_schemes.keys()],
+            value="Default",
+            clearable=False
+        )
+    ], style={"width": "30%"}),
+    html.Br(),
+    html.Div([
+        html.Label("View Mode:"),
+        dcc.RadioItems(
+            id="view-toggle",
+            options=[{"label": "Timeline", "value": "Timeline"}, {"label": "Map", "value": "Map"}],
+            value="Timeline",
+            labelStyle={"display": "inline-block", "margin-right": "20px"}
+        )
+    ]),
+    html.Br(),
+    html.Button("Download Current View", id="download-button"),
+    dcc.Download(id="download"),
+    dcc.Graph(id="main-graph")
+])
+
+@app.callback(
+    Output("main-graph", "figure"),
+    Input("category-filter", "value"),
+    Input("era-filter", "value"),
+    Input("search-input", "value"),
+    Input("theme-toggle", "value"),
+    Input("color-scheme", "value"),
+    Input("view-toggle", "value")
+)
+def update_graph(selected_categories, selected_eras, search_query, theme, color_scheme, view_mode):
+    try:
+        filtered_df = df.copy()
+        if selected_categories:
+            filtered_df = filtered_df[filtered_df["Category"].isin(selected_categories)]
+        if selected_eras:
+            filtered_df = filtered_df[filtered_df["Era"].isin(selected_eras)]
+        if search_query:
+            filtered_df = filtered_df[filtered_df["Name"].str.contains(search_query, case=False, na=False)]
+        filtered_df = filtered_df.sort_values("Birth")
+        if view_mode == "Timeline":
+            return create_timeline(filtered_df, theme, color_scheme)
+        else:
+            return create_map_duotone(filtered_df, theme, color_scheme)
+    except Exception as e:
+        print("Error in callback:", e)
+        return go.Figure()
+
+@app.callback(
+    Output("download", "data"),
+    Input("download-button", "n_clicks"),
+    State("main-graph", "figure"),
+    prevent_initial_call=True
+)
+def download_figure(n_clicks, figure):
+    html_str = generate_html_download(figure)
+    return dcc.send_string(html_str, "personalities_view.html")
+
+if __name__ == "__main__":
+    app.run_server(debug=True)
